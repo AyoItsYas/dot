@@ -1,4 +1,5 @@
-#!/bin/bash
+# ~/.zshrc file for zsh interactive shells.
+# see /usr/share/doc/zsh/examples/zshrc for examples
 
 # if not running interactively, don't do anything
 
@@ -61,11 +62,27 @@ if [ -x /usr/bin/dircolors ]; then
     alias egrep='egrep --color=auto'
 fi
 
+setopt autocd              # change directory just by typing its name
+setopt correct            # auto correct mistakes
+setopt interactivecomments # allow comments in interactive mode
+setopt magicequalsubst     # enable filename expansion for arguments of the form ‘anything=expression’
+setopt nonomatch           # hide error message if there is no match for the pattern
+setopt notify              # report the status of background jobs immediately
+setopt numericglobsort     # sort filenames numerically when it makes sense
+setopt promptsubst         # enable command substitution in prompt
+
+# variables
+
+TIMEFMT=$'\nreal\t%E\nuser\t%U\nsys\t%S\ncpu\t%P' # configure `time` format
+PROMPT_EOL_MARK=""                                # hide EOL sign ('%')
+WORDCHARS=${WORDCHARS//\/}                        # Don't consider certain characters part of the word
+
 # aliases
 
-alias ll='ls -alF'
-alias la='ls -A'
 alias l='ls -CF'
+alias la='ls -A'
+alias ll='ls -alF'
+alias history="history 0"
 
 if [ -f ~/.zsh_aliases ]; then
     . ~/.zsh_aliases
@@ -78,26 +95,59 @@ export PYTHONSTARTUP="$HOME/.pythonrc.py" # python startup file
 
 # history configuration
 
-setopt histignorealldups
-
-HISTSIZE=10000
-SAVEHIST=10000
 HISTFILE=~/.zsh_history
+HISTSIZE=1000
+SAVEHIST=2000
+
+setopt histignorealldups      # ignore duplicate commands history list
+setopt hist_expire_dups_first # delete duplicates first when HISTFILE size exceeds HISTSIZE
+setopt hist_ignore_dups       # ignore duplicated commands history list
+setopt hist_ignore_space      # ignore commands that start with space
+setopt hist_verify            # show command with history expansion to user before running it
+setopt share_history          # share command history data
 
 # keybindings
 
+bindkey -e                                        # emacs key bindings
 bindkey "^ " autosuggest-accept
-bindkey "^[[1;5C" forward-word
-bindkey "^[[1;5D" backward-word
+bindkey ' ' magic-space                           # do history expansion on space
+bindkey '^U' backward-kill-line                   # ctrl + U
+bindkey '^[[3;5~' kill-word                       # ctrl + Supr
+bindkey '^[[3~' delete-char                       # delete
+bindkey '^[[1;5C' forward-word                    # ctrl + ->
+bindkey '^[[1;5D' backward-word                   # ctrl + <-
+bindkey '^[[5~' beginning-of-buffer-or-history    # page up
+bindkey '^[[6~' end-of-buffer-or-history          # page down
+bindkey '^[[H' beginning-of-line                  # home
+bindkey '^[[F' end-of-line                        # end
+bindkey '^[[Z' undo                               # shift + tab undo last action
+
+# enable completion features
+
+autoload -Uz compinit
+compinit -d ~/.cache/zcompdump
+zstyle ':completion:*:*:*:*:*' menu select
+zstyle ':completion:*' auto-description 'specify: %d'
+zstyle ':completion:*' completer _expand _complete
+zstyle ':completion:*' format 'Completing %d'
+zstyle ':completion:*' group-name ''
+zstyle ':completion:*' list-colors ''
+zstyle ':completion:*' list-prompt %SAt %p: Hit TAB for more, or the character to insert%s
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+zstyle ':completion:*' rehash true
+zstyle ':completion:*' select-prompt %SScrolling active: current selection at %p%s
+zstyle ':completion:*' use-compctl false
+zstyle ':completion:*' verbose true
+zstyle ':completion:*:kill:*' command 'ps -u $USER -o pid,%cpu,tty,cputime,cmd'
 
 # utility
 
 if [ -f ./.venv/bin/activate ]; then
-    source ./.venv/bin/activate # if a python virtual envirnment is found activate it automatically
-    activate() { source ./.venv/bin/activate; } # utility command to easily activate the enviornment
+    source ./.venv/bin/activate                  # if a python virtual envirnment is found activate it automatically
+    activate() { source ./.venv/bin/activate; }  # utility command to easily activate the enviornment
 fi
 
-eval "$(zoxide init zsh)" # setting up zoxide
+eval "$(zoxide init zsh)"                                                          # setting up zoxide
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 eval "$(oh-my-posh init zsh --config /home/yasiru/Documents/.posh-theme.omp.json)"
 
@@ -106,12 +156,44 @@ eval "$(oh-my-posh init zsh --config /home/yasiru/Documents/.posh-theme.omp.json
 # eval $(thefuck --alias)
 # eval $(thefuck --alias fk)
 
-setup_nvm() {
-    export NVM_DIR="$HOME/.nvm"
+export NVM_DIR="$HOME/.nvm"
 
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # loads nvm
-    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # loads nvm bash_completion
+#[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+#[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+NODE_GLOBALS=(`find ~/.nvm/versions/node -maxdepth 3 -type l -wholename '*/bin/*' | xargs -n1 basename | sort | uniq`)
+NODE_GLOBALS+=(node nvm yarn)
+
+_load_nvm() {
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 }
+
+for cmd in "${NODE_GLOBALS[@]}"; do
+    eval "function ${cmd}(){ unset -f ${NODE_GLOBALS[*]}; _load_nvm; unset -f _load_nvm; ${cmd} \$@; }"
+done
+unset cmd NODE_GLOBALS
+
+export PATH="$PATH:$HOME/.yarn/bin"
+
+# enable auto-suggestions based on the history
+if [ -f /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
+    . /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+fi
+
+# enable command-not-found if installed
+if [ -f /etc/zsh_command_not_found ]; then
+    . /etc/zsh_command_not_found
+fi
+
+if [ -f /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]; then
+    . /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+fi
+
+# enable command-not-found if installed
+if [ -f /etc/zsh_command_not_found ]; then
+    . /etc/zsh_command_not_found
+fi
 
 # zsh plugins
 
