@@ -1,6 +1,8 @@
 # ~/.zshrc file for zsh interactive shells.
 # see /usr/share/doc/zsh/examples/zshrc for examples
 
+export OPENWEATHERMAP_API_KEY="0dc720299cf7634e04a2e6192f1dd385"
+
 # if not running interactively, don't do anything
 
 case $- in
@@ -199,3 +201,5 @@ fi
 
 source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh
 source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh # !!! must be the last plugin sourced
+
+source ~/.env
