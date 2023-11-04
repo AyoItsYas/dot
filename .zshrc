@@ -1,8 +1,6 @@
 # ~/.zshrc file for zsh interactive shells.
 # see /usr/share/doc/zsh/examples/zshrc for examples
 
-export OPENWEATHERMAP_API_KEY="0dc720299cf7634e04a2e6192f1dd385"
-
 # if not running interactively, don't do anything
 
 case $- in
