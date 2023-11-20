@@ -455,8 +455,6 @@ else
 fi
 
 # ex: ts=4 sw=4 et filetype=sh
-
-
 # setting up commands for python virtual environments
 
 if [ -f ./.venv/bin/activate ]; then
@@ -468,13 +466,15 @@ fi
 
 # setting up 3rd party terminal tools/mnt/9275c84f-279a-4dd7-b9fd-dca73b6df9a6/
 
-eval "$(thefuck --alias fuck)"
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+# eval "$(thefuck --alias fuck)"
 eval "$(zoxide init bash)"
-eval "$(oh-my-posh init bash --config /home/yasiru/Documents/.posh-theme.omp.json)"
+eval "$(oh-my-posh init bash --config $HOME/.posh-theme.omp.json)"
 
 # setting up enviorment variables
 
-export PYTHONSTARTUP="$HOME/.pythonrc.py" # python startup file
+export PYTHONSTARTUP="$HOME/.pythonrc" # python startup file
 
 if [ -f ./.env ]; then
     source ./.env

@@ -53,9 +53,9 @@ esac
 
 if [ -x /usr/bin/dircolors ]; then
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
-    alias ls='ls --color=auto'
-    alias dir='dir --color=auto'
-    alias vdir='vdir --color=auto'
+    alias ls='ls --color=auto --hyperlink'
+    alias dir='dir --color=auto --hyperlink'
+    alias vdir='vdir --color=auto --hyperlink'
 
     alias grep='grep --color=auto'
     alias fgrep='fgrep --color=auto'
@@ -91,7 +91,7 @@ fi
 # variables
 
 export PATH="/home/yasiru/bin:$PATH"
-export PYTHONSTARTUP="$HOME/.pythonrc.py" # python startup file
+export PYTHONSTARTUP="$HOME/.pythonrc" # python startup file
 
 # history configuration
 
@@ -147,9 +147,10 @@ if [ -f ./.venv/bin/activate ]; then
     activate() { source ./.venv/bin/activate; }  # utility command to easily activate the enviornment
 fi
 
-eval "$(zoxide init zsh)"                                                          # setting up zoxide
 eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-eval "$(oh-my-posh init zsh --config /home/yasiru/Documents/.posh-theme.omp.json)"
+
+eval "$(zoxide init zsh)" # setting up zoxide
+eval "$(oh-my-posh init zsh --config $HOME/.posh-theme.omp.json)"
 
 # setting up thefuck
 
